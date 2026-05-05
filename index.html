@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion de la Glycémie - Jeu de Compétition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFA500 50%, #FFD700 100%);
+            min-height: 100vh; 
+            padding: 20px;
+            animation: bgShift 20s ease infinite;
+        }
+        @keyframes bgShift {
+            0%, 100% { background: linear-gradient(135deg, #FF6B6B 0%, #FFA500 50%, #FFD700 100%); }
+            50% { background: linear-gradient(135deg, #FFA500 0%, #FFD700 50%, #FF6B6B 100%); }
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 25px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+            overflow: hidden;
+            animation: slideUp 0.8s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header { 
+            background: linear-gradient(135deg, #FF6B6B, #FFA500); 
+            color: white; 
+            padding: 40px; 
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header h1 { 
+            font-size: 3em; 
+            margin-bottom: 10px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            letter-spacing: -1px;
+        }
+        .header p { font-size: 1.3em; opacity: 0.95; }
+        .content { padding: 40px; }
+        .game-section { margin: 25px 0; }
+        .game-title { 
+            color: #FF6B6B; 
+            font-size: 1.8em; 
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .info-box { 
+            background: linear-gradient(135deg, #FF6B6B15 0%, #FFA50015 100%);
+            padding: 20px; 
+            border-radius: 15px; 
+            margin: 15px 0;
+            border-left: 5px solid #FF6B6B;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #FF6B6B20, #FFA50020);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #FF6B6B30;
+        }
+        .stat-label { color: #666; font-size: 0.9em; font-weight: 600; }
+        .stat-value { 
+            font-size: 2.5em; 
+            font-weight: 800; 
+            color: #FF6B6B;
+            margin: 10px 0;
+        }
+        .stat-meter {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B6B, #FFA500);
+            transition: width 0.5s ease;
+        }
+        .timeline { 
+            margin: 30px 0;
+            position: relative;
+        }
+        .phase {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border-left: 5px solid #FF6B6B;
+            animation: slideIn 0.5s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .phase-title { 
+            font-size: 1.3em; 
+            font-weight: 700;
+            color: #FF6B6B;
+            margin-bottom: 10px;
+        }
+        .phase-description { color: #666; line-height: 1.6; margin-bottom: 15px; }
+        .buttons-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .buttons-group { grid-template-columns: 1fr; }
+        }
+        .choice-btn {
+            padding: 20px;
+            border: 3px solid #FF6B6B;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+        .choice-btn:hover {
+            background: linear-gradient(135deg, #FF6B6B, #FFA500);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+        .choice-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .food-icon { font-size: 2em; margin-bottom: 10px; }
+        .consequence {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            animation: slideDown 0.5s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .consequence-good {
+            background: linear-gradient(135deg, #90EE90, #98FB98);
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        .consequence-bad {
+            background: linear-gradient(135deg, #FFB6C6, #FF8C8C);
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        .consequence-neutral {
+            background: linear-gradient(135deg, #FFE4B5, #FFDAB9);
+            color: #654321;
+            border: 2px solid #FFA500;
+        }
+        .consequence-title { font-weight: 700; font-size: 1.1em; margin-bottom: 10px; }
+        .final-result {
+            background: linear-gradient(135deg, #FF6B6B, #FFA500);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .result-score { 
+            font-size: 3em; 
+            font-weight: 800;
+            margin: 20px 0;
+        }
+        .result-message { 
+            font-size: 1.3em;
+            margin: 15px 0;
+        }
+        .crash-indicator {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .crash-yes {
+            background: #dc3545;
+            color: white;
+        }
+        .crash-no {
+            background: #28a745;
+            color: white;
+        }
+        .play-again-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FFA500);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+        .play-again-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.3);
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .hidden { display: none !important; }
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin: 10px 5px;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Gestion de la Glycémie 🍌</h1>
+            <p>Gérez votre énergie pour remporter la compétition!</p>
+        </div>
+
+        <div class="content">
+            <!-- Menu Principal -->
+            <div id="mainMenu" class="game-section">
+                <div class="game-title">Bienvenue dans le Jeu de Gestion Glycémique!</div>
+                <div class="info-box">
+                    <p><strong>🎯 Objectif:</strong> Complétez une compétition en gérant votre glycémie!</p>
+                    <p><strong>📋 Règles:</strong></p>
+                    <ul style="margin: 10px 0 0 20px; line-height: 1.8;">
+                        <li>Vous avez 5 phases d'effort intenses</li>
+                        <li>Avant chaque phase, vous pouvez choisir: Banane 🍌 | Eau Sucrée 🥤 | Volonté Pure 💪</li>
+                        <li>Chaque choix affecte votre énergie et votre glycémie</li>
+                        <li>Attention aux hypoglycémies (crash) qui réduisent votre performance!</li>
+                    </ul>
+                </div>
+                <div class="button-group">
+                    <button class="play-again-btn" onclick="startGame()">Commencer le Jeu!</button>
+                </div>
+            </div>
+
+            <!-- Jeu Principal -->
+            <div id="gameArea" class="hidden">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Énergie</div>
+                        <div class="stat-value" id="energy">100</div>
+                        <div class="stat-meter">
+                            <div class="meter-fill" id="energyMeter" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Glycémie</div>
+                        <div class="stat-value" id="glycemia">100</div>
+                        <div class="stat-meter">
+                            <div class="meter-fill" id="glycemiaMeter" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Performance</div>
+                        <div class="stat-value" id="performance">100</div>
+                        <div class="stat-meter">
+                            <div class="meter-fill" id="performanceMeter" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase" id="phaseContainer"></div>
+                <div class="buttons-group" id="choicesContainer"></div>
+                <div id="consequenceContainer"></div>
+
+                <button class="play-again-btn hidden" id="nextPhaseBtn" onclick="nextPhase()">Continuer vers la Prochaine Phase →</button>
+            </div>
+
+            <!-- Résultats Finaux -->
+            <div id="resultsArea" class="hidden">
+                <div class="final-result">
+                    <h2>🏆 COMPÉTITION TERMINÉE! 🏆</h2>
+                    <div class="result-score" id="finalScore">0/2500</div>
+                    <div class="result-message" id="finalMessage"></div>
+                    <div id="crashStatus"></div>
+                    <div id="badges"></div>
+                </div>
+                <div class="button-group">
+                    <button class="play-again-btn" onclick="location.reload()">Rejouer 🔄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            phase: 0,
+            energy: 100,
+            glycemia: 100,
+            performance: 100,
+            totalScore: 0,
+            hasHypoglycemia: false,
+            decisions: [],
+            glycemiaHistory: []
+        };
+
+        const phases = [
+            {
+                number: 1,
+                title: "Phase 1: L'Échauffement 🏃",
+                description: "Vous commencez à vous échauffer pour la compétition. L'effort est modéré.",
+                effort: 15
+            },
+            {
+                number: 2,
+                title: "Phase 2: Les Sprints Initiaux ⚡",
+                description: "C'est le moment! Les sprints commencent. L'intensité augmente!",
+                effort: 25
+            },
+            {
+                number: 3,
+                title: "Phase 3: Le Moment Critique 🔥",
+                description: "La compétition est au plus chaud! Vous devez donner le maximum.",
+                effort: 30
+            },
+            {
+                number: 4,
+                title: "Phase 4: La Fatigue S'Installe 😫",
+                description: "Vous ressentez la fatigue. Vous avez à peine la moitié du parcours.",
+                effort: 25
+            },
+            {
+                number: 5,
+                title: "Phase 5: L'Arrivée! 🏁",
+                description: "Dernier effort! La ligne d'arrivée est en vue. Donnez tout ce que vous avez!",
+                effort: 20
+            }
+        ];
+
+        const foods = {
+            banana: {
+                name: "Banane 🍌",
+                description: "Absorption lente et régulière. Énergie stable et prolongée.",
+                glycemiaEffect: 35,
+                energyEffect: 25,
+                crashRisk: "low"
+            },
+            water: {
+                name: "Eau Sucrée 🥤",
+                description: "Absorption rapide. Énergie immédiate mais risquée!",
+                glycemiaEffect: 60,
+                energyEffect: 40,
+                crashRisk: "high"
+            },
+            willpower: {
+                name: "Volonté Pure 💪",
+                description: "Vous vous en sortez seul(e). Augmentation d'adrénaline.",
+                glycemiaEffect: -15,
+                energyEffect: 10,
+                crashRisk: "critical"
+            }
+        };
+
+        function startGame() {
+            document.getElementById('mainMenu').classList.add('hidden');
+            document.getElementById('gameArea').classList.remove('hidden');
+            gameState = {
+                phase: 0,
+                energy: 100,
+                glycemia: 100,
+                performance: 100,
+                totalScore: 0,
+                hasHypoglycemia: false,
+                decisions: [],
+                glycemiaHistory: [100]
+            };
+            displayPhase();
+        }
+
+        function displayPhase() {
+            gameState.phase++;
+            const phase = phases[gameState.phase - 1];
+            
+            const phaseHTML = `
+                <div class="phase-title">${phase.title}</div>
+                <div class="phase-description">${phase.description}</div>
+                <p><strong>Effort de cette phase: ${phase.effort}% d'énergie consommée</strong></p>
+                <p><strong>Que voulez-vous faire avant cette phase?</strong></p>
+            `;
+            document.getElementById('phaseContainer').innerHTML = phaseHTML;
+
+            const choicesHTML = `
+                <button class="choice-btn" onclick="chooseFood('banana')">
+                    <div class="food-icon">🍌</div>
+                    <strong>${foods.banana.name}</strong>
+                    <p style="font-size: 0.8em; margin-top: 5px;">${foods.banana.description}</p>
+                </button>
+                <button class="choice-btn" onclick="chooseFood('water')">
+                    <div class="food-icon">🥤</div>
+                    <strong>${foods.water.name}</strong>
+                    <p style="font-size: 0.8em; margin-top: 5px;">${foods.water.description}</p>
+                </button>
+                <button class="choice-btn" onclick="chooseFood('willpower')">
+                    <div class="food-icon">💪</div>
+                    <strong>${foods.willpower.name}</strong>
+                    <p style="font-size: 0.8em; margin-top: 5px;">${foods.willpower.description}</p>
+                </button>
+            `;
+            document.getElementById('choicesContainer').innerHTML = choicesHTML;
+            document.getElementById('consequenceContainer').innerHTML = '';
+            document.getElementById('nextPhaseBtn').classList.add('hidden');
+        }
+
+        function chooseFood(foodType) {
+            const food = foods[foodType];
+            const phase = phases[gameState.phase - 1];
+
+            // Appliquer les effets de la nourriture
+            gameState.glycemia = Math.max(0, Math.min(200, gameState.glycemia + food.glycemiaEffect));
+            gameState.energy = Math.max(0, Math.min(100, gameState.energy + food.energyEffect));
+
+            // Appliquer l'effort de la phase
+            gameState.energy -= phase.effort;
+
+            // Vérifier l'hypoglycémie
+            if (gameState.glycemia < 70) {
+                gameState.hasHypoglycemia = true;
+                gameState.performance = Math.max(0, gameState.performance - 20);
+            }
+
+            // Calculer le score de cette phase
+            const phaseScore = Math.max(0, gameState.energy * 2 + gameState.glycemia);
+            gameState.totalScore += phaseScore;
+
+            gameState.glycemiaHistory.push(gameState.glycemia);
+            gameState.decisions.push({ phase: gameState.phase, food: foodType, glycemia: gameState.glycemia });
+
+            // Afficher les conséquences
+            displayConsequences(foodType, phase);
+            updateStats();
+
+            if (gameState.phase < 5) {
+                document.getElementById('nextPhaseBtn').classList.remove('hidden');
+            } else {
+                setTimeout(endGame, 2000);
+            }
+        }
+
+        function displayConsequences(foodType, phase) {
+            const food = foods[foodType];
+            let consequenceClass = 'consequence-neutral';
+            let consequenceText = '';
+
+            if (gameState.glycemia < 70) {
+                consequenceClass = 'consequence-bad';
+                consequenceText = `<div class="consequence-title">⚠️ HYPOGLYCÉMIE!</div>
+                    <p>Votre glycémie est très basse (${gameState.glycemia}). Vous commencez à ressentir des vertiges et une fatigue extrême. Votre performance baisse de 20%!</p>`;
+            } else if (gameState.glycemia > 150) {
+                consequenceClass = 'consequence-good';
+                consequenceText = `<div class="consequence-title">✅ Excellent Équilibre!</div>
+                    <p>Votre glycémie est bien équilibrée (${gameState.glycemia}). Vous vous sentez énergique et prêt(e) à affronter la phase!</p>`;
+            } else {
+                consequenceClass = 'consequence-neutral';
+                consequenceText = `<div class="consequence-title">⚡ Phase Complétée!</div>
+                    <p>Vous avez complété la phase avec une glycémie de ${gameState.glycemia} et une énergie restante de ${Math.max(0, gameState.energy)}%</p>`;
+            }
+
+            if (gameState.energy < 0) {
+                gameState.energy = 0;
+                consequenceText += `<p><strong style="color: red;">Attention: Vous êtes complètement épuisé(e)!</strong></p>`;
+            }
+
+            const consequenceHTML = `
+                <div class="consequence ${consequenceClass}">
+                    ${consequenceText}
+                </div>
+            `;
+
+            document.getElementById('consequenceContainer').innerHTML = consequenceHTML;
+        }
+
+        function updateStats() {
+            document.getElementById('energy').textContent = Math.max(0, Math.round(gameState.energy));
+            document.getElementById('glycemia').textContent = Math.round(gameState.glycemia);
+            document.getElementById('performance').textContent = Math.max(0, Math.round(gameState.performance));
+
+            document.getElementById('energyMeter').style.width = Math.max(0, gameState.energy) + '%';
+            document.getElementById('glycemiaMeter').style.width = Math.min(100, gameState.glycemia / 2) + '%';
+            document.getElementById('performanceMeter').style.width = Math.max(0, gameState.performance) + '%';
+        }
+
+        function nextPhase() {
+            if (gameState.phase < 5) {
+                displayPhase();
+            }
+        }
+
+        function endGame() {
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('resultsArea').classList.remove('hidden');
+
+            const finalScore = Math.max(0, gameState.totalScore);
+            document.getElementById('finalScore').textContent = finalScore + '/2500';
+
+            let message = '';
+            let performance = '';
+            let badges = '';
+
+            if (gameState.hasHypoglycemia) {
+                message = `Vous avez eu une hypoglycémie pendant la compétition... mais vous avez quand même terminé! 
+                    <p style="font-size: 0.9em; margin-top: 10px;">Prochaine fois, gérez mieux votre glycémie!</p>`;
+            } else if (finalScore > 2000) {
+                message = `🏆 Performance Exceptionnelle! Vous avez géré votre glycémie à la perfection!`;
+                badges = '<div class="badge">🏆 Champion de la Glycémie!</div>';
+            } else if (finalScore > 1500) {
+                message = `🥈 Très Bonne Performance! Vous avez bien géré votre énergie.`;
+                badges = '<div class="badge">⭐ Athlète Confirmé!</div>';
+            } else if (finalScore > 1000) {
+                message = `🥉 Bonne tentative! Votre gestion glycémique s'est améliorée.`;
+                badges = '<div class="badge">📈 En Progression!</div>';
+            } else {
+                message = `💪 C'est un bon début! La gestion glycémique est importante pour la performance.`;
+                badges = '<div class="badge">🌱 Novice</div>';
+            }
+
+            const crashStatus = gameState.hasHypoglycemia ? 
+                '<div class="crash-indicator crash-yes">⚠️ Hypoglycémie Détectée!</div>' :
+                '<div class="crash-indicator crash-no">✅ Pas d\'Hypoglycémie!</div>';
+
+            document.getElementById('finalMessage').innerHTML = message;
+            document.getElementById('crashStatus').innerHTML = crashStatus;
+            document.getElementById('badges').innerHTML = badges;
+        }
+    </script>
+</body>
+</html>
